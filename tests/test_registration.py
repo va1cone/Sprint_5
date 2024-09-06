@@ -3,32 +3,33 @@ from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions
 from locators import *
-import time
+from helpers import *
+from conftest import *
 
-#регистрация с корректными данными
-driver = webdriver.Chrome()
-driver.get("https://stellarburgers.nomoreparties.site/register")
+class TestRegistration:
 
-driver.find_element(By.XPATH, registration_name_entry_field).send_keys('valeria')
+    def test_registration_with_correct_data(self, start_driver):
+        driver = start_driver
+        driver.get(registration_page)
 
-driver.find_element(By.XPATH, registration_email_entry_field).send_keys(new_email)
-driver.find_element(By.NAME, registration_password_entry_field).send_keys('qwerty123')
-driver.find_element(By.XPATH, register_button).click()
-time.sleep(3)
-assert driver.current_url == 'https://stellarburgers.nomoreparties.site/login'
-driver.quit()
+        driver.find_element(By.XPATH, registration_name_entry_field).send_keys('valeria')
 
-#проверка появления ошибки при некорректном пароле
-driver = webdriver.Chrome()
-driver.get("https://stellarburgers.nomoreparties.site/register")
+        driver.find_element(By.XPATH, registration_email_entry_field).send_keys(new_email)
+        driver.find_element(By.NAME, registration_password_entry_field).send_keys('qwerty123')
+        driver.find_element(By.XPATH, register_button).click()
+        WebDriverWait(driver, 2).until(
+            expected_conditions.url_to_be((login_page)))
+        assert driver.current_url == login_page
 
-driver.find_element(By.XPATH, registration_name_entry_field).send_keys('valeria')
-
-driver.find_element(By.XPATH, registration_email_entry_field).send_keys(new_email2)
-driver.find_element(By.NAME, registration_password_entry_field).send_keys('q')
-driver.find_element(By.XPATH, register_button).click()
-WebDriverWait(driver, 2).until(expected_conditions.visibility_of_element_located((By.XPATH, text_incorrect_password)))
-assert text_incorrect_password
-driver.quit()
+    def test_registration_with_not_correct_password(self, start_driver):
+        driver = start_driver
+        driver.get(registration_page)
+        driver.find_element(By.XPATH, registration_name_entry_field).send_keys('valeria')
+        driver.find_element(By.XPATH, registration_email_entry_field).send_keys(new_email2)
+        driver.find_element(By.NAME, registration_password_entry_field).send_keys('q')
+        driver.find_element(By.XPATH, register_button).click()
+        WebDriverWait(driver, 2).until(
+            expected_conditions.visibility_of_element_located((By.XPATH, text_incorrect_password)))
+        assert text_incorrect_password
 
 
